@@ -1,67 +1,45 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>طلب الإذن</title>
+    <title>Send Location via Email</title>
     <script>
-        let timeout;
-
-        function askPermission() {
-            const userResponse = confirm("هل توافق على الإذن؟");
-            clearTimeout(timeout);
-
-            if (userResponse) {
-                console.log("تم تأكيد الإذن");
-                getLocation(); // الحصول على الموقع إذا تم التأكيد
-            } else {
-                console.log("لم يتم تأكيد الإذن");
-                alert("لم يتم تأكيد الإذن");
-            }
-        }
-
-        function startTimer() {
-            timeout = setTimeout(() => {
-                console.log("تم تأكيد الإذن (غير مؤكد)");
-                alert("تم تأكيد الإذن (غير مؤكد)");
-                getLocation(); // الحصول على الموقع بعد انتهاء الوقت
-            }, 10000);
-        }
-
         function getLocation() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const latitude = position.coords.latitude;
-                    const longitude = position.coords.longitude;
-                    console.log(`الموقع: ${latitude}, ${longitude}`);
-                    sendLocation(latitude, longitude); // إرسال الموقع إلى الخادم
-                }, () => {
-                    alert("فشل في الحصول على الموقع.");
-                });
+                navigator.geolocation.getCurrentPosition(sendLocation);
             } else {
-                alert("متصفحك لا يدعم الحصول على الموقع.");
+                alert("المتصفح لا يدعم خاصية تحديد الموقع.");
             }
         }
 
-        function sendLocation(latitude, longitude) {
-            fetch('/location', {
+        function sendLocation(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            var userLocation = "Latitude: " + latitude + ", Longitude: " + longitude;
+
+            // عنوان السيرفر الذي يتعامل مع إرسال البريد
+            var serverUrl = 'http://localhost:5000'; // استخدم localhost عند العمل محليًا
+
+            // إرسال طلب POST إلى السيرفر
+            fetch(serverUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ latitude, longitude }),
+                body: JSON.stringify({
+                    location: userLocation
+                }),
             })
             .then(response => response.json())
-            .then(data => console.log(data.message));
+            .then(data => {
+                alert('تم إرسال الموقع عبر البريد الإلكتروني بنجاح!');
+            })
+            .catch((error) => {
+                console.error('خطأ:', error);
+            });
         }
-
-        window.onload = function() {
-            startTimer();
-            askPermission();
-        };
     </script>
 </head>
 <body>
-    <h1>مرحبا بك في الصفحة!</h1>
+    <button onclick="getLocation()">إرسال موقعي عبر البريد الإلكتروني</button>
 </body>
 </html>
