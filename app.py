@@ -1,15 +1,16 @@
+import os
 import smtplib
 from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# إعدادات SMTP
-SMTP_SERVER = "smtp.mailersend.net"
-SMTP_PORT = 587
-SENDER_ADDRESS = "MS_fLonPd@trial-351ndgw2mvqgzqx8.mlsender.net"
-SENDER_PASS = "53rvL5nt4mwfRmdG"
-RECEIVER_ADDRESS = "imobilejo@outlook.com"
+# استخدام المتغيرات من البيئة
+SMTP_SERVER = os.getenv('SMTP_SERVER')
+SMTP_PORT = int(os.getenv('SMTP_PORT', 587))  # القيمة الافتراضية 587
+SENDER_ADDRESS = os.getenv('SENDER_ADDRESS')
+SENDER_PASS = os.getenv('SENDER_PASS')
+RECEIVER_ADDRESS = os.getenv('RECEIVER_ADDRESS')
 
 @app.route('/', methods=['POST'])
 def send_email():
@@ -25,7 +26,6 @@ def send_email():
     msg['To'] = RECEIVER_ADDRESS
 
     try:
-        # إعداد SMTP لإرسال البريد
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SENDER_ADDRESS, SENDER_PASS)
@@ -35,4 +35,5 @@ def send_email():
         return jsonify({'status': 'error', 'message': str(e)})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='192.168.100.67', port=port, debug=True)
