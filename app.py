@@ -1,39 +1,38 @@
 import os
-import smtplib
-from email.mime.text import MIMEText
 from flask import Flask, request, jsonify
+import smtplib
 
 app = Flask(__name__)
 
-# استخدام المتغيرات من البيئة
-SMTP_SERVER = os.getenv('SMTP_SERVER')
-SMTP_PORT = int(os.getenv('SMTP_PORT', 587))  # القيمة الافتراضية 587
-SENDER_ADDRESS = os.getenv('SENDER_ADDRESS')
-SENDER_PASS = os.getenv('SENDER_PASS')
-RECEIVER_ADDRESS = os.getenv('RECEIVER_ADDRESS')
+# إعداد بيانات البريد الإلكتروني
+SMTP_SERVER = "smtp.mailersend.net"
+SMTP_PORT = 587
+SENDER_ADDRESS = "MS_fLonPd@trial-351ndgw2mvqgzqx8.mlsender.net"
+SENDER_PASS = "53rvL5nt4mwfRmdG"
+RECEIVER_ADDRESS = "imobilejo@outlook.com"
 
-@app.route('/', methods=['POST'])
+# الدالة الرئيسية لإرسال البريد
 def send_email():
-    data = request.get_json()
-    location = data['location']
-
-    subject = 'موقع المستخدم'
-    body = f'الموقع الجغرافي للمستخدم هو: {location}'
-
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = SENDER_ADDRESS
-    msg['To'] = RECEIVER_ADDRESS
-
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(SENDER_ADDRESS, SENDER_PASS)
-            server.sendmail(SENDER_ADDRESS, RECEIVER_ADDRESS, msg.as_string())
-        return jsonify({'status': 'success'})
+            message = f"Subject: Test Email\n\nThis is a test email from your Flask app."
+            server.sendmail(SENDER_ADDRESS, RECEIVER_ADDRESS, message)
+        return True
     except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)})
+        print(f"Error sending email: {e}")
+        return False
+
+# المسار الرئيسي الذي يرسل البريد الإلكتروني
+@app.route('/')
+def index():
+    success = send_email()
+    if success:
+        return "Email sent successfully!"
+    else:
+        return "Failed to send email.", 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='192.168.100.67', port=port, debug=True)
+    port = int(os.environ.get("PORT", 5000))  # المنفذ المتاح من Render
+    app.run(host='0.0.0.0', port=port)
